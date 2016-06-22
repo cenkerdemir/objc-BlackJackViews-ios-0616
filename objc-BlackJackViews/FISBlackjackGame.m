@@ -25,7 +25,7 @@
     [self dealNewRound];
     
     NSUInteger i=0;
-    while (i<3) {
+    while (i<5) {
         if (self.house.busted || self.player.busted)
             break;
         [self processPlayerTurn];

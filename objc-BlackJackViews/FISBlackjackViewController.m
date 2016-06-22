@@ -8,10 +8,23 @@
 
 #import "FISBlackjackViewController.h"
 
+@interface FISBlackjackViewController ()
+
+@property (nonatomic) NSUInteger countWinsForHouse;
+@property (nonatomic) NSUInteger countLossesForHouse;
+@property (nonatomic) NSUInteger countWinsForPlayer;
+@property (nonatomic) NSUInteger countLossesForPlayer;
+
+@end
+
 @implementation FISBlackjackViewController
 
 - (void)viewDidLoad {
     self.game = [[FISBlackjackGame alloc]init];
+    self.countWinsForHouse = 0;
+    self.countLossesForHouse = 0;
+    self.countWinsForPlayer = 0;
+    self.countLossesForPlayer = 0;
     [self resetLabels];
 }
 
@@ -42,6 +55,7 @@
 }
 
 - (IBAction)dealButtonTapped:(id)sender {
+    self.game = [self.game init];
     [self resetLabels];
     [self.game.deck resetDeck];
     [self.game dealNewRound];
@@ -125,7 +139,7 @@
     self.playerHitButtonLabel.enabled = NO;
     self.playerStayButtonLabel.enabled = NO;
     [self.game processHouseTurn];
-    if ([self.game.house shouldHit]) {
+    //if ([self.game.house shouldHit] || self.game.house.stayed) {
         if (self.houseCard3.isHidden) {
             [self.houseCard3 setHidden:NO];
             self.houseCard3.text = [self.game.house.cardsInHand[[self.game.house.cardsInHand count]-1] cardLabel];
@@ -138,7 +152,7 @@
             [self.houseCard5 setHidden:NO];
             self.houseCard5.text = [self.game.player.cardsInHand[[self.game.player.cardsInHand count]-1] cardLabel];
         }
-    }
+    //}
     if ([self isThereAWinnerYet]) {
         [self.game incrementWinsAndLossesForHouseWins:[self.game houseWins]];
     }
@@ -148,9 +162,25 @@
 }
 
 -(void)updateWinsLossesUI {
+    //update the winner label
+    if ([self.game houseWins]) {
+        [self.winner setHidden:NO];
+        self.winner.text = @"House Wins!";
+        self.houseScore.text = [NSString stringWithFormat:@"%lu", self.game.house.handscore];
+        self.countWinsForHouse += self.game.house.wins;
+        self.countLossesForPlayer += self.game.player.losses;
+    }
+    else {
+        [self.winner setHidden:NO];
+        self.winner.text = @"You Win!";
+        self.playerScore.text = [NSString stringWithFormat:@"%lu", self.game.player.handscore];
+        self.countWinsForPlayer += self.game.player.wins;
+        self.countLossesForHouse += self.game.house.losses;
+    }
+    
     // house labels
-    self.houseWinsLabel.text = [NSString stringWithFormat:@"Wins  : %lu", self.game.house.wins];
-    self.houseLosses.text =    [NSString stringWithFormat:@"Losses: %lu", self.game.house.losses];
+    self.houseWinsLabel.text = [NSString stringWithFormat:@"Wins  : %lu", self.countWinsForHouse];
+    self.houseLosses.text =    [NSString stringWithFormat:@"Losses: %lu", self.countLossesForHouse];
     if (self.game.house.busted) {
         [self.houseBusted setHidden:NO];
     }
@@ -159,8 +189,8 @@
     }
     
     //player labels
-    self.playerWinsLabel.text = [NSString stringWithFormat:@"Wins: %lu", self.game.player.wins];
-    self.playerLosses.text = [NSString stringWithFormat:@"Losses: %lu", self.game.player.losses];
+    self.playerWinsLabel.text = [NSString stringWithFormat:@"Wins: %lu", self.countWinsForPlayer];
+    self.playerLosses.text = [NSString stringWithFormat:@"Losses: %lu", self.countLossesForPlayer];
     if (self.game.player.busted) {
         [self.playerBusted setHidden:NO];
     }
@@ -168,17 +198,6 @@
         [self.playerBlackjackLabel setHidden:NO];
     }
     
-    //update the winner label
-    if ([self.game houseWins]) {
-        [self.winner setHidden:NO];
-        self.winner.text = @"House Wins!";
-        self.houseScore.text = [NSString stringWithFormat:@"%lu", self.game.house.handscore];
-    }
-    else {
-        [self.winner setHidden:NO];
-        self.winner.text = @"You Win!";
-        self.playerScore.text = [NSString stringWithFormat:@"%lu", self.game.player.handscore];
-    }
 }
 
 
